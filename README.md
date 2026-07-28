@@ -21,6 +21,28 @@ Transform your n8n instance into an autonomous AI agent engine—powering code g
 
 ---
 
+## 🔑 AGY Authentication & `.gemini` Directory Setup
+
+To run AGY inside n8n headlessly without interactive login prompts, the n8n Docker container accesses your host's AGY authentication session stored in `~/.gemini`.
+
+### 1. Initial Host Authentication
+Before running the node in n8n, perform a one-time login on your host machine:
+```bash
+# Run AGY CLI on host to authenticate with Google
+agy
+```
+This generates OAuth tokens and configuration files inside your host directory `~/.gemini`.
+
+### 2. Set Host Folder Permissions (`~/.gemini`)
+AGY requires group write permissions to write refreshed OAuth tokens, conversation logs, and trajectory data inside `~/.gemini`. Grant group write access without giving world/others access:
+
+```bash
+# Grant group write permissions to ~/.gemini (keeps world/others access blocked)
+sudo chmod -R g+w ~/.gemini
+```
+
+---
+
 ## 📥 Output Payload Schema (n8n Data Mapping)
 
 The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP Request, Slack, Email, Postgres, Webhook):
@@ -86,7 +108,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 
 ## 🐳 Docker Deployment Template for n8n Servers
 
-If hosting n8n in Docker (Oracle Cloud, AWS, GCP, VPS), use this `docker-compose.yml` to mount the host `agy` binary and glibc libraries:
+If hosting n8n in Docker (Oracle Cloud, AWS, GCP, VPS), use this `docker-compose.yml` to mount the host `agy` binary, `.gemini` settings, and glibc libraries:
 
 ```yaml
 services:
@@ -119,13 +141,12 @@ volumes:
   n8n_data:
 ```
 
-*Note: Ensure container access to host `.gemini` by running `sudo chmod -R 775 ~/.gemini` on the host.*
-
 ---
 
-## ❓ Troubleshooting
+## ❓ Troubleshooting FAQs
 
-- **`authentication required`**: Ensure `~/.gemini` is mounted and permissions allow read access (`sudo chmod -R 775 ~/.gemini`).
+- **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Run `sudo chmod -R g+w ~/.gemini` on the host to grant group write access without exposing files to world/others.
+- **`authentication required`**: Perform initial interactive login on host by running `agy` once before starting n8n.
 - **`Error relocating /usr/local/bin/agy: symbol not found`**: Ensure host glibc libraries (`/lib/aarch64-linux-gnu`) are mounted in your `docker-compose.yml`.
 
 ---
