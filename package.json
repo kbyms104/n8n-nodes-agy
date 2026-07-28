@@ -1,0 +1,35 @@
+{
+  "name": "n8n-nodes-agy",
+  "version": "1.0.0",
+  "description": "n8n community node to seamlessly integrate and execute Google Antigravity CLI (agy) commands",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n-nodes",
+    "antigravity",
+    "agy",
+    "gemini",
+    "ai",
+    "cli"
+  ],
+  "license": "MIT",
+  "main": "dist/nodes/Agy/Agy.node.js",
+  "scripts": {
+    "build": "tsc && node -e \"const fs=require('fs'); fs.mkdirSync('dist/nodes/Agy', {recursive:true}); if(fs.existsSync('src/nodes/Agy/agy.svg')) fs.copyFileSync('src/nodes/Agy/agy.svg', 'dist/nodes/Agy/agy.svg');\"",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "nodes": [
+      "dist/nodes/Agy/Agy.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "n8n-workflow": "^1.0.0",
+    "typescript": "^5.2.2"
+  }
+}
