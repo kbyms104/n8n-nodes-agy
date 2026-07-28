@@ -31,14 +31,14 @@ Before running the node in n8n, perform a one-time login on your host machine:
 # Run AGY CLI on host to authenticate with Google
 agy
 ```
-This generates OAuth tokens and configuration files inside your host directory `~/.gemini`.
+This generates OAuth tokens (`antigravity-oauth-token`) and configuration files inside your host directory `~/.gemini`.
 
 ### 2. Set Host Folder Permissions (`~/.gemini`)
-AGY requires group write permissions to write refreshed OAuth tokens, conversation logs, and trajectory data inside `~/.gemini`. Grant group write access without giving world/others access:
+OAuth tokens are initially created with strict owner-only permissions (`600`). To allow the n8n container process to read authentication tokens and write refreshed sessions without exposing files to world/others, grant group read and write permissions:
 
 ```bash
-# Grant group write permissions to ~/.gemini (keeps world/others access blocked)
-sudo chmod -R g+w ~/.gemini
+# Grant group read and write permissions to ~/.gemini (keeps world/others access blocked)
+sudo chmod -R g+rw ~/.gemini
 ```
 
 ---
@@ -145,7 +145,7 @@ volumes:
 
 ## ❓ Troubleshooting FAQs
 
-- **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Run `sudo chmod -R g+w ~/.gemini` on the host to grant group write access without exposing files to world/others.
+- **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Run `sudo chmod -R g+rw ~/.gemini` on the host to grant group read and write access without exposing files to world/others.
 - **`authentication required`**: Perform initial interactive login on host by running `agy` once before starting n8n.
 - **`Error relocating /usr/local/bin/agy: symbol not found`**: Ensure host glibc libraries (`/lib/aarch64-linux-gnu`) are mounted in your `docker-compose.yml`.
 
