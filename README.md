@@ -34,10 +34,10 @@ agy
 This generates OAuth tokens (`antigravity-oauth-token`) and configuration files inside your host directory `~/.gemini`.
 
 ### 2. Set Host Folder Permissions (`~/.gemini`)
-OAuth tokens are initially created with strict owner-only permissions (`600`). To allow the n8n container process to read authentication tokens and write refreshed sessions without exposing files to world/others, grant group read and write permissions:
+Grant group read and write permissions on `~/.gemini` so the n8n container process (running with your host GID via `group_add`) can read and refresh authentication tokens:
 
 ```bash
-# Grant group read and write permissions to ~/.gemini (keeps world/others access blocked)
+# Grant group read and write permissions to ~/.gemini
 sudo chmod -R g+rw ~/.gemini
 ```
 
@@ -115,6 +115,8 @@ services:
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n
+    group_add:
+      - "1001"                              # Grants host user group (e.g. 1001/ubuntu) access to .gemini files
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -128,8 +130,6 @@ services:
       - N8N_SECURE_COOKIE=false             # Allow HTTP IP login
     volumes:
       - n8n_data:/home/node/.n8n
-      # Custom node volume
-      - ./custom_nodes/n8n-nodes-agy:/home/node/.n8n/custom/node_modules/n8n-nodes-agy
       # Mount host AGY binary & authentication
       - ~/.local/bin/agy:/usr/local/bin/agy:ro
       - ~/.gemini:/home/node/.gemini
@@ -145,7 +145,7 @@ volumes:
 
 ## ❓ Troubleshooting FAQs
 
-- **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Run `sudo chmod -R g+rw ~/.gemini` on the host to grant group read and write access without exposing files to world/others.
+- **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Ensure `group_add: ["1001"]` (or your host GID) is set in your `docker-compose.yml` and run `sudo chmod -R g+rw ~/.gemini` on the host.
 - **`authentication required`**: Perform initial interactive login on host by running `agy` once before starting n8n.
 - **`Error relocating /usr/local/bin/agy: symbol not found`**: Ensure host glibc libraries (`/lib/aarch64-linux-gnu`) are mounted in your `docker-compose.yml`.
 
