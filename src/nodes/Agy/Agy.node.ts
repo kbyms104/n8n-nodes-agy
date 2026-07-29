@@ -165,6 +165,26 @@ export class Agy implements INodeType {
           targetCwd = os.tmpdir();
         }
 
+        // Save incoming binary files (if any) directly into targetCwd so AGY CLI can inspect physical files
+        const currentItem = items[itemIndex];
+        if (currentItem && currentItem.binary) {
+          const fs = await import('fs');
+          const path = await import('path');
+          for (const binaryKey of Object.keys(currentItem.binary)) {
+            const binaryData = currentItem.binary[binaryKey];
+            if (binaryData && binaryData.data) {
+              const buffer = await this.helpers.getBinaryDataBuffer(itemIndex, binaryKey);
+              const fileName = binaryData.fileName || `${binaryKey}.bin`;
+              const filePath = path.join(targetCwd, fileName);
+              try {
+                fs.writeFileSync(filePath, buffer);
+              } catch (e) {
+                // Ignore write errors if tmp directory is read-only
+              }
+            }
+          }
+        }
+
         const homeDir = process.env.HOME || '/home/node';
         const args: string[] = [];
 

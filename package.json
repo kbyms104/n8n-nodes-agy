@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-agy",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "n8n community node to seamlessly integrate and execute Google Antigravity CLI (agy) commands",
   "keywords": [
     "n8n-community-node-package",
