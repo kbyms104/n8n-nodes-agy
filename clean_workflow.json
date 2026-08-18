@@ -3,51 +3,229 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes"
-            }
-          ]
-        }
+        "method": "POST",
+        "url": "YOUR_DISCORD_WEBHOOK_URL_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🎬 **[트랙 2: 유튜브 동영상 게시 & 완료 처리 보고]**\\n\\n📄 **대본 문서**: {{ $('Smart File Router').item.json.effectiveDocx.name }}\\n🎬 **동영상 파일**: {{ $('Smart File Router').item.json.mp4File.name }}\\n📌 **업로드 유튜브 제목**: {{ $('[Track 2] AGY YouTube SEO Specialist').item.json.parsed.title }}\\n\\n✅ **유튜브 게시 완료 및 `금융/완료` 폴더로 최종 이동 처리되었습니다!**\"\n}",
+        "options": {}
       },
-      "id": "501b80fc-dd38-46a5-bf50-2457cfe869ec",
-      "name": "1. 5Min Poll Trigger",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
+      "id": "f52782e7-e53b-4ec2-9ac5-549f180d1824",
+      "name": "[Track 2] Discord Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [
-        -160,
-        -96
+        1440,
+        704
       ]
     },
     {
       "parameters": {
-        "jsCode": "const now = new Date();\nconst kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));\nconst today = kstNow.toISOString().split('T')[0];\n\nconst kstYesterday = new Date(kstNow.getTime() - (24 * 60 * 60 * 1000));\nconst yesterday = kstYesterday.toISOString().split('T')[0];\n\nreturn [{ json: { todayFolder: today, yesterdayFolder: yesterday } }];"
+        "mode": "passThrough",
+        "options": {}
       },
-      "id": "4e383b4b-721e-4a34-96b0-d2fc3d1b3efd",
-      "name": "2. Get Today & Yesterday Dates",
+      "id": "d908ca9e-b943-4de4-936f-ea4ca490586d",
+      "name": "[Track 2] Merge Move Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1216,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": "={{ $('Smart File Router').item.json.mp4File.id }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": "={{ $('Smart File Router').item.json.completedFolderId }}"
+      },
+      "id": "5b7f9b91-2e0d-42c8-818c-db2f410f7ced",
+      "name": "[Track 2] Move MP4 to Finance Completed",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": "={{ $('Smart File Router').item.json.effectiveDocx.id }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": "={{ $('Smart File Router').item.json.completedFolderId }}"
+      },
+      "id": "671fd28e-eac9-47ef-a1d5-604e9b740d63",
+      "name": "[Track 2] Move Docx to Finance Completed",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upload"
+      },
+      "id": "da55a4eb-2a22-4cb3-9aef-93996480ac5b",
+      "name": "[Track 2] YouTube Upload Node",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        784,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "4a9a1f7d-5cb5-45d0-86a5-c55f3d7362cb",
+      "name": "[Track 2] Merge SEO Metadata & Video Stream",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "prompt": "=현재 디렉토리(/home/node/.n8n)에 물리 파일로 저장된 분석 보고서 파일(report_t2.md)의 원문 내용을 직접 읽고 분석하여 유튜브 업로드용 SEO 정보를 작성하세요.\n\n[작성 규칙]\n1. title: 검색량이 많고 시선을 사로잡는 금융 유튜브 제목 (이모지 0개)\n2. description: 보고서 내용을 요약한 알찬 설명글 및 추천 타임스탬프\n3. tags: 금융/재테크 관련 검색 키워드 태그 10개 (쉼표 구분)",
+        "workingDirectory": "/home/node/.n8n"
+      },
+      "id": "9dc9ae66-f08e-4843-a9eb-aaa9a7e7153a",
+      "name": "[Track 2] AGY YouTube SEO Specialist",
+      "type": "n8n-nodes-agy.agy",
+      "typeVersion": 1,
+      "position": [
+        560,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "fileName": "report_t2.md"
+        }
+      },
+      "id": "node-t2-convert-file",
+      "name": "[Track 2] Convert Text to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        230,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const returnData = [];\n\nfor (let i = 0; i < $input.all().length; i++) {\n  let buffer = null;\n\n  try {\n    buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n  } catch (e) {\n    const item = $input.all()[i];\n    const keys = Object.keys(item.binary || {});\n    if (keys.length > 0) {\n      buffer = await this.helpers.getBinaryDataBuffer(i, keys[0]);\n    }\n  }\n\n  if (!buffer) {\n    returnData.push({ json: { text: \"\" } });\n    continue;\n  }\n\n  const str = buffer.toString('utf-8');\n  const matches = str.match(/<w:t[^>]*>(.*?)<\\/w:t>/g);\n  let cleanText = \"\";\n\n  if (matches && matches.length > 0) {\n    cleanText = matches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(t => t.length > 0).join(' ');\n  } else {\n    cleanText = str.replace(/<[^>]+>/g, ' ').replace(/[\\x00-\\x1F\\x7F-\\x9F]/g, ' ').trim();\n  }\n\n  returnData.push({ json: { text: cleanText } });\n}\n\nreturn returnData;"
+      },
+      "id": "f2d0bc86-c441-44ce-8cda-b4ad9f6f072e",
+      "name": "[Track 2] Extract Text for YouTube SEO",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        64,
-        -96
+        128,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": "={{ $json.mp4File.id }}",
+        "options": {}
+      },
+      "id": "6130a102-0fce-4148-b819-0ec93599cd7e",
+      "name": "[Track 2] Download MP4 Video File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": "={{ $json.effectiveDocx.id }}",
+        "options": {}
+      },
+      "id": "3bf78b81-ee6b-42b7-914d-85cf8c003d10",
+      "name": "[Track 2] Download Docx for YouTube SEO",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.needTrack2 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "d32eb65f-8206-4756-8fac-0d637b8906f0",
+      "name": "[Track 2] Need YouTube Upload?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_DISCORD_WEBHOOK_URL_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"📝 **[트랙 1: 티스토리 & 쓰레드 글 포스팅 완료 보고]**\\n\\n📄 **분석 보고서**: {{ $('Smart File Router').item.json.rawDocxFile.name }}\\n🏷️ **중복 방지 처리**: 파일명 `[POSTED]_` 태그 변경 완료 (1회 포스팅 보장)\\n\\n📝 **[1. 티스토리 블로그 포스팅]**\\n```text\\n{{ $('[Track 1] AGY Tistory Specialist').item.json.parsed.response }}\\n```\\n\\n🧵 **[2. 쓰레드 타래 포스팅 리스트]**\\n```text\\n{{ $('[Track 1] AGY Threads Specialist').item.json.parsed.response }}\\n```\"\n}",
+        "options": {}
+      },
+      "id": "7428e6f7-2643-451c-b676-7555e7871a01",
+      "name": "[Track 1] Discord Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1216,
+        336
       ]
     },
     {
       "parameters": {
         "authentication": "serviceAccount",
-        "resource": "fileFolder",
-        "searchMethod": "query",
-        "filter": {},
+        "operation": "update",
+        "fileId": "={{ $('Smart File Router').item.json.rawDocxFile.id }}",
         "options": {}
       },
-      "id": "bbf289a9-f748-455a-b8db-5307c616dcb8",
-      "name": "3. List Subfolders Inside Finance Directly",
+      "id": "18a21bbc-9ea7-4a7a-9e63-4a7e2d43e7da",
+      "name": "[Track 1] Tag File as [POSTED]",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        288,
-        -96
+        1008,
+        336
       ],
       "credentials": {
         "googleApi": {
@@ -58,36 +236,167 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\nconst todayStr = $('2. Get Today & Yesterday Dates').item.json.todayFolder;\nconst yesterdayStr = $('2. Get Today & Yesterday Dates').item.json.yesterdayFolder;\n\nlet todayFolderId = null;\nlet completedFolderId = null;\nlet yesterdayFolderId = null;\n\nfor (const item of items) {\n  const name = item.json.name || '';\n  if (name === todayStr) todayFolderId = item.json.id;\n  if (name === '완료') completedFolderId = item.json.id;\n  if (name === yesterdayStr) yesterdayFolderId = item.json.id;\n}\n\nreturn [{\n  json: {\n    todayFolderId,\n    todayFolderName: todayStr,\n    completedFolderId,\n    yesterdayFolderId,\n    hasYesterdayFolder: yesterdayFolderId !== null,\n    hasTodayFolder: todayFolderId !== null\n  }\n}];"
+        "mode": "passThrough",
+        "options": {}
       },
-      "id": "57c2eb1a-e081-42cd-ae02-9be8d40a29fc",
-      "name": "4. Organize Folder IDs",
+      "id": "d2ab5b0d-8f43-472d-9168-3cd210f24305",
+      "name": "[Track 1] Merge Posts",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "prompt": "=당신은 금융 지식 크리에이터입니다.\n현재 디렉토리(/home/node/.n8n)에 물리 파일로 저장된 분석 보고서 파일(report_t1.md)의 원문 내용을 직접 읽고 분석하여 쓰레드(Threads) 타래 포스팅을 작성하세요.\n\n[작성 규칙]\n1. 이모지, 이모티콘 사용 절대 금지 (이모지 0개)\n2. 3~4개의 이어진 포스팅으로 구성하되 '1/4', '2/4' 형태의 숫자만 표기",
+        "workingDirectory": "/home/node/.n8n"
+      },
+      "id": "c22fe1bc-ca8c-4cd8-8512-9a095f8d1582",
+      "name": "[Track 1] AGY Threads Specialist",
+      "type": "n8n-nodes-agy.agy",
+      "typeVersion": 1,
+      "position": [
+        560,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "prompt": "=당신은 금융/경제 분야의 전문 칼럼니스트입니다.\n현재 디렉토리(/home/node/.n8n)에 물리 파일로 저장된 분석 보고서 파일(report_t1.md)의 원문 내용을 직접 읽고 분석하여 티스토리 블로그 포스팅을 작성하세요.\n\n[작성 규칙]\n1. 이모지, 이모티콘 사용 절대 금지 (이모지 0개)\n2. AI 상투구 표현 배제, 사람이 쓴 자연스러운 전문 어조 사용\n3. 제목, 서론, 본론(소제목), 결론의 명확한 구조",
+        "workingDirectory": "/home/node/.n8n"
+      },
+      "id": "0524d51b-74f0-415c-852b-b6dbf0016fbe",
+      "name": "[Track 1] AGY Tistory Specialist",
+      "type": "n8n-nodes-agy.agy",
+      "typeVersion": 1,
+      "position": [
+        560,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "fileName": "report_t1.md"
+        }
+      },
+      "id": "node-t1-convert-file",
+      "name": "[Track 1] Convert Text to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        230,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const returnData = [];\n\nfor (let i = 0; i < $input.all().length; i++) {\n  let buffer = null;\n\n  // n8n 격리 바이너리 저장소에서 실제 파일 버퍼 끌어오기\n  try {\n    buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n  } catch (e) {\n    const item = $input.all()[i];\n    const keys = Object.keys(item.binary || {});\n    if (keys.length > 0) {\n      buffer = await this.helpers.getBinaryDataBuffer(i, keys[0]);\n    }\n  }\n\n  if (!buffer) {\n    returnData.push({ json: { text: \"\" } });\n    continue;\n  }\n\n  const str = buffer.toString('utf-8');\n\n  // XML 태그 정제 및 순수 한글 텍스트만 추출\n  const matches = str.match(/<w:t[^>]*>(.*?)<\\/w:t>/g);\n  let cleanText = \"\";\n\n  if (matches && matches.length > 0) {\n    cleanText = matches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(t => t.length > 0).join(' ');\n  } else {\n    cleanText = str.replace(/<[^>]+>/g, ' ').replace(/[\\x00-\\x1F\\x7F-\\x9F]/g, ' ').trim();\n  }\n\n  returnData.push({ json: { text: cleanText } });\n}\n\nreturn returnData;"
+      },
+      "id": "6f48282e-a7f8-480c-9a11-7eb32cac0bc9",
+      "name": "[Track 1] Extract Text from Docx",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        512,
-        -96
+        128,
+        336
       ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "download",
+        "fileId": "={{ $json.rawDocxFile.id }}",
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/markdown"
+            }
+          }
+        }
+      },
+      "id": "6597b21c-b957-422b-b11f-93e1bc17f94e",
+      "name": "[Track 1] Download Raw Docx",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -96,
+        336
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "mrZ6yCvOoZoSYWD7",
+          "name": "Google Drive account"
+        }
+      }
     },
     {
       "parameters": {
         "conditions": {
           "boolean": [
             {
-              "value1": "={{ $json.hasYesterdayFolder }}",
+              "value1": "={{ $json.needTrack1 }}",
               "value2": true
             }
           ]
         }
       },
-      "id": "e8ce5fc7-2b30-4b67-97ef-6785f0a7edbe",
-      "name": "Is Yesterday Folder Exists?",
+      "id": "0ec9daca-7b25-4725-abe1-a5b2db9a8a90",
+      "name": "[Track 1] Need Blog/Threads?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        736,
-        -304
+        -320,
+        384
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet rawDocxFile = null;\nlet postedDocxFile = null;\nlet mp4File = null;\n\nfor (const item of items) {\n  const json = item.json || {};\n  const name = json.name || '';\n  const mimeType = json.mimeType || '';\n\n  // 1. 동영상 파일 감지 (.mp4, .mov, video 타입)\n  const isVideo = name.endsWith('.mp4') || name.endsWith('.mov') || mimeType.startsWith('video/');\n  \n  // 2. 문서 파일 감지 (.docx, Google Docs 문서, 확장자 없는 순수 제목 문서)\n  const isDoc = name.endsWith('.docx') || name.endsWith('.doc') || mimeType === 'application/vnd.google-apps.document' || mimeType.includes('wordprocessingml') || (!isVideo && name.length > 0);\n\n  if (isVideo) {\n    mp4File = json;\n  } else if (isDoc) {\n    if (name.includes('[POSTED]')) {\n      postedDocxFile = json;\n    } else {\n      rawDocxFile = json;\n    }\n  }\n}\n\nconst effectiveDocx = rawDocxFile || postedDocxFile;\nconst needTrack1 = rawDocxFile !== null;\nconst needTrack2 = effectiveDocx !== null && mp4File !== null;\n\nreturn [{\n  json: {\n    needTrack1,\n    needTrack2,\n    rawDocxFile,\n    effectiveDocx,\n    mp4File,\n    todayFolderId: $('4. Organize Folder IDs').item.json.todayFolderId,\n    completedFolderId: $('4. Organize Folder IDs').item.json.completedFolderId\n  }\n}];"
+      },
+      "id": "a197e923-b163-48da-b986-2ddbf8bf0fc5",
+      "name": "Smart File Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "={{ $json.todayFolderId }}",
+            "mode": "id"
+          }
+        },
+        "options": {}
+      },
+      "id": "346ec2c9-75ca-42aa-b9f9-25e4bde87b0e",
+      "name": "List Files in Today Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -752,
+        544
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "mrZ6yCvOoZoSYWD7",
+          "name": "Google Drive account"
+        }
+      }
     },
     {
       "parameters": {
@@ -111,13 +420,13 @@
           "cachedResultUrl": "https://drive.google.com/drive/folders/1G2GH6FE_mrz1A48OkEfWFBvJb742KgV2"
         }
       },
-      "id": "5a1866cc-17ba-4089-b737-269052ff1ca9",
+      "id": "4bfff65c-5927-4036-bfb1-9619194b7582",
       "name": "Move Yesterday Folder to Completed",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        944,
-        -400
+        -544,
+        144
       ],
       "credentials": {
         "googleApi": {
@@ -125,32 +434,56 @@
           "name": "Google Drive account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.hasYesterdayFolder }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "7d04a213-93f0-4add-89bf-267c6f0dcced",
+      "name": "Is Yesterday Folder Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst todayStr = $('2. Get Today & Yesterday Dates').item.json.todayFolder;\nconst yesterdayStr = $('2. Get Today & Yesterday Dates').item.json.yesterdayFolder;\n\nlet todayFolderId = null;\nlet completedFolderId = null;\nlet yesterdayFolderId = null;\n\nfor (const item of items) {\n  const name = item.json.name || '';\n  if (name === todayStr) todayFolderId = item.json.id;\n  if (name === '완료') completedFolderId = item.json.id;\n  if (name === yesterdayStr) yesterdayFolderId = item.json.id;\n}\n\nreturn [{\n  json: {\n    todayFolderId,\n    todayFolderName: todayStr,\n    completedFolderId,\n    yesterdayFolderId,\n    hasYesterdayFolder: yesterdayFolderId !== null,\n    hasTodayFolder: todayFolderId !== null\n  }\n}];"
+      },
+      "id": "c69d0dbc-6147-45cf-a554-f502a3def122",
+      "name": "4. Organize Folder IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        448
+      ]
     },
     {
       "parameters": {
         "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "=",
-        "filter": {
-          "folderId": {
-            "__rl": true,
-            "value": "={{ $json.todayFolderId }}",
-            "mode": "id"
-          }
-        },
+        "filter": {},
         "options": {}
       },
-      "id": "7801aa7e-212e-49d1-bd5d-4a78b9e8f59f",
-      "name": "List Files in Today Folder",
+      "id": "6252c9e5-c414-4ae6-aeb2-9bf0ade6f4f0",
+      "name": "3. List Subfolders Inside Finance Directly",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        736,
-        0
+        -1200,
+        448
       ],
-      "alwaysOutputData": false,
-      "executeOnce": false,
       "credentials": {
         "googleApi": {
           "id": "mrZ6yCvOoZoSYWD7",
@@ -160,439 +493,51 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\nlet rawDocxFile = null;\nlet postedDocxFile = null;\nlet mp4File = null;\n\nfor (const item of items) {\n  const json = item.json || {};\n  const name = json.name || '';\n  const mimeType = json.mimeType || '';\n\n  const isVideo = name.endsWith('.mp4') || name.endsWith('.mov') || mimeType.startsWith('video/');\n  const isDoc = name.endsWith('.docx') || name.endsWith('.doc') || mimeType === 'application/vnd.google-apps.document' || mimeType.includes('wordprocessingml') || (!isVideo && name.length > 0);\n\n  if (isVideo) {\n    mp4File = json;\n  } else if (isDoc) {\n    if (name.includes('[POSTED]')) {\n      postedDocxFile = json;\n    } else {\n      rawDocxFile = json;\n    }\n  }\n}\n\nconst effectiveDocx = rawDocxFile || postedDocxFile;\nconst needTrack1 = rawDocxFile !== null;\nconst needTrack2 = effectiveDocx !== null && mp4File !== null;\n\nreturn [{\n  json: {\n    needTrack1,\n    needTrack2,\n    rawDocxFile,\n    effectiveDocx,\n    mp4File,\n    todayFolderId: $('4. Organize Folder IDs').item.json.todayFolderId,\n    completedFolderId: $('4. Organize Folder IDs').item.json.completedFolderId\n  }\n}];"
+        "jsCode": "const now = new Date();\nconst kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));\nconst today = kstNow.toISOString().split('T')[0];\n\nconst kstYesterday = new Date(kstNow.getTime() - (24 * 60 * 60 * 1000));\nconst yesterday = kstYesterday.toISOString().split('T')[0];\n\nreturn [{ json: { todayFolder: today, yesterdayFolder: yesterday } }];"
       },
-      "id": "9c3f0bfc-bd2b-4b99-add0-30f79191a589",
-      "name": "Smart File Router",
+      "id": "3b71eb21-d0f4-49be-9c7c-9887ab830127",
+      "name": "2. Get Today & Yesterday Dates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        944,
-        0
+        -1424,
+        448
       ]
     },
     {
       "parameters": {
-        "conditions": {
-          "boolean": [
+        "rule": {
+          "interval": [
             {
-              "value1": "={{ $json.needTrack1 }}",
-              "value2": true
+              "field": "minutes"
             }
           ]
         }
       },
-      "id": "a6367dc6-e3df-4113-b711-d0791be695e3",
-      "name": "[Track 1] Need Blog/Threads?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "id": "7a75eae1-c919-4efd-94ec-99f7ff1d9469",
+      "name": "1. 5Min Poll Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
       "position": [
-        1168,
-        -160
-      ]
-    },
-    {
-      "parameters": {
-        "authentication": "serviceAccount",
-        "operation": "download",
-        "fileId": "={{ $json.rawDocxFile.id }}",
-        "options": {}
-      },
-      "id": "d064e33d-a6fc-4d19-b050-dbd8fc52b85d",
-      "name": "[Track 1] Download Raw Docx",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        1392,
-        -208
-      ],
-      "credentials": {
-        "googleApi": {
-          "id": "mrZ6yCvOoZoSYWD7",
-          "name": "Google Drive account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "text",
-        "options": {}
-      },
-      "id": "82dac9f4-ce4c-471a-a8a3-7ef084c7bf8a",
-      "name": "[Track 1] Extract Text from Docx",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        1616,
-        -208
-      ]
-    },
-    {
-      "parameters": {
-        "prompt": "=당신은 금융/경제 분야의 전문 칼럼니스트입니다. 아래 분석 보고서의 금융 분석 내용을 바탕으로 티스토리 블로그 포스팅을 작성하세요.\n\n[원본 글 분석 보고서]\n{{ $json.text }}\n\n[작성 규칙]\n1. 이모지, 이모티콘 사용 절대 금지 (이모지 0개)\n2. AI 상투구 표현 배제, 사람이 쓴 자연스러운 전문 어조 사용\n3. 제목, 서론, 본론(소제목), 결론의 명확한 구조",
-        "workingDirectory": "/tmp"
-      },
-      "id": "0d30aca0-0cd3-48db-9c70-7892151ae123",
-      "name": "[Track 1] AGY Tistory Specialist",
-      "type": "n8n-nodes-agy.agy",
-      "typeVersion": 1,
-      "position": [
-        1824,
-        -304
-      ]
-    },
-    {
-      "parameters": {
-        "prompt": "=당신은 금융 지식 크리에이터입니다. 아래 분석 보고서의 금융 주제를 바탕으로 쓰레드(Threads) 타래 포스팅을 작성하세요.\n\n[원본 글 분석 보고서]\n{{ $json.text }}\n\n[작성 규칙]\n1. 이모지, 이모티콘 사용 절대 금지 (이모지 0개)\n2. 3~4개의 이어진 포스팅으로 구성하되 '1/4', '2/4' 형태의 숫자만 표기",
-        "workingDirectory": "/tmp"
-      },
-      "id": "a42cef7f-a73b-427a-96df-003d8ccba2c7",
-      "name": "[Track 1] AGY Threads Specialist",
-      "type": "n8n-nodes-agy.agy",
-      "typeVersion": 1,
-      "position": [
-        1824,
-        -128
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "passThrough",
-        "options": {}
-      },
-      "id": "76d3ff2c-56dc-4b5a-be79-0a1561807f4a",
-      "name": "[Track 1] Merge Posts",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 2.1,
-      "position": [
-        2048,
-        -208
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "fileId": "={{ $('Smart File Router').item.json.rawDocxFile.id }}",
-        "options": {}
-      },
-      "id": "a23c52d1-d0b0-4bdc-aef8-c3548a9e90b8",
-      "name": "[Track 1] Tag File as [POSTED]",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        2272,
-        -208
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "YOUR_DISCORD_WEBHOOK_URL_HERE",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"📝 **[트랙 1: 티스토리 & 쓰레드 글 포스팅 완료 보고]**\\n\\n📄 **분석 보고서**: {{ $('Smart File Router').item.json.rawDocxFile.name }}\\n🏷️ **중복 방지 처리**: 파일명 `[POSTED]_` 태그 변경 완료 (1회 포스팅 보장)\\n\\n📝 **[1. 티스토리 블로그 포스팅]**\\n```text\\n{{ $('[Track 1] AGY Tistory Specialist').item.json.parsed.response }}\\n```\\n\\n🧵 **[2. 쓰레드 타래 포스팅 리스트]**\\n```text\\n{{ $('[Track 1] AGY Threads Specialist').item.json.parsed.response }}\\n```\"\n}",
-        "options": {}
-      },
-      "id": "dcbc1a65-b8ad-4af7-8c2a-2d5c23157331",
-      "name": "[Track 1] Discord Notification",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [
-        2496,
-        -208
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.needTrack2 }}",
-              "value2": true
-            }
-          ]
-        }
-      },
-      "id": "c41b029c-db11-4c76-921b-e5aa6c3944ba",
-      "name": "[Track 2] Need YouTube Upload?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        1168,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "download",
-        "fileId": "={{ $json.effectiveDocx.id }}",
-        "options": {}
-      },
-      "id": "b547d2f7-fc44-4607-b80d-1ed8441f9023",
-      "name": "[Track 2] Download Docx for YouTube SEO",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        1392,
-        80
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "download",
-        "fileId": "={{ $json.mp4File.id }}",
-        "options": {}
-      },
-      "id": "2eb394fe-b19d-4b8f-901a-b8dbf940209e",
-      "name": "[Track 2] Download MP4 Video File",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        1392,
-        240
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "text",
-        "options": {}
-      },
-      "id": "34c3ee8f-30ca-4337-aaf2-e7af5db3266e",
-      "name": "[Track 2] Extract Text for YouTube SEO",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
-      "position": [
-        1616,
-        80
-      ]
-    },
-    {
-      "parameters": {
-        "prompt": "=아래 제공된 금융 분석 보고서 텍스트를 바탕으로 유튜브 업로드용 SEO 정보를 작성하세요.\n\n[분석 보고서 내용]\n{{ $json.text }}\n\n[작성 규칙]\n1. title: 검색량이 많고 시선을 사로잡는 금융 유튜브 제목 (이모지 0개)\n2. description: 보고서 내용을 요약한 알찬 설명글 및 추천 타임스탬프\n3. tags: 금융/재테크 관련 검색 키워드 태그 10개 (쉼표 구분)",
-        "workingDirectory": "/tmp"
-      },
-      "id": "f5723b62-8eed-42a7-8637-9232bc71aeb6",
-      "name": "[Track 2] AGY YouTube SEO Specialist",
-      "type": "n8n-nodes-agy.agy",
-      "typeVersion": 1,
-      "position": [
-        1824,
-        80
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combinationMode": "mergeByPosition",
-        "options": {}
-      },
-      "id": "e4c9a2a5-685d-4623-9b8e-85f4e8216797",
-      "name": "[Track 2] Merge SEO Metadata & Video Stream",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 2.1,
-      "position": [
-        2048,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "upload"
-      },
-      "id": "1efbb7c8-2659-40f1-beae-9b45dfa60812",
-      "name": "[Track 2] YouTube Upload Node",
-      "type": "n8n-nodes-base.youTube",
-      "typeVersion": 1,
-      "position": [
-        2272,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "move",
-        "fileId": "={{ $('Smart File Router').item.json.effectiveDocx.id }}",
-        "driveId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "My Drive"
-        },
-        "folderId": "={{ $('Smart File Router').item.json.completedFolderId }}"
-      },
-      "id": "39cfa837-f1c9-4eee-8212-cad3280d9791",
-      "name": "[Track 2] Move Docx to Finance Completed",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        2496,
-        112
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "move",
-        "fileId": "={{ $('Smart File Router').item.json.mp4File.id }}",
-        "driveId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "My Drive"
-        },
-        "folderId": "={{ $('Smart File Router').item.json.completedFolderId }}"
-      },
-      "id": "95d5fe8e-6203-4e1f-9e6c-441e96f55e54",
-      "name": "[Track 2] Move MP4 to Finance Completed",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        2496,
-        224
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "passThrough",
-        "options": {}
-      },
-      "id": "3a76ec22-5e60-425a-abcd-6cbf8be70c4a",
-      "name": "[Track 2] Merge Move Results",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 2.1,
-      "position": [
-        2704,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "YOUR_DISCORD_WEBHOOK_URL_HERE",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"🎬 **[트랙 2: 유튜브 동영상 게시 & 완료 처리 보고]**\\n\\n📄 **대본 문서**: {{ $('Smart File Router').item.json.effectiveDocx.name }}\\n🎬 **동영상 파일**: {{ $('Smart File Router').item.json.mp4File.name }}\\n📌 **업로드 유튜브 제목**: {{ $('[Track 2] AGY YouTube SEO Specialist').item.json.parsed.title }}\\n\\n✅ **유튜브 게시 완료 및 `금융/완료` 폴더로 최종 이동 처리되었습니다!**\"\n}",
-        "options": {}
-      },
-      "id": "63a2354f-533d-46ff-9c29-f3239bfdd00b",
-      "name": "[Track 2] Discord Notification",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [
-        2928,
-        160
+        -1648,
+        448
       ]
     }
   ],
   "pinData": {},
   "connections": {
-    "1. 5Min Poll Trigger": {
-      "main": [
-        [
-          {
-            "node": "2. Get Today & Yesterday Dates",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2. Get Today & Yesterday Dates": {
-      "main": [
-        [
-          {
-            "node": "3. List Subfolders Inside Finance Directly",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "3. List Subfolders Inside Finance Directly": {
-      "main": [
-        [
-          {
-            "node": "4. Organize Folder IDs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "4. Organize Folder IDs": {
-      "main": [
-        [
-          {
-            "node": "Is Yesterday Folder Exists?",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "List Files in Today Folder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is Yesterday Folder Exists?": {
-      "main": [
-        [
-          {
-            "node": "Move Yesterday Folder to Completed",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "List Files in Today Folder": {
-      "main": [
-        [
-          {
-            "node": "Smart File Router",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Smart File Router": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Need Blog/Threads?",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "[Track 2] Need YouTube Upload?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 1] Need Blog/Threads?": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Download Raw Docx",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 1] Download Raw Docx": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Extract Text from Docx",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "[Track 1] Extract Text from Docx": {
+      "main": [
+        [
+          {
+            "node": "[Track 1] Convert Text to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 1] Convert Text to File": {
       "main": [
         [
           {
@@ -608,82 +553,82 @@
         ]
       ]
     },
-    "[Track 1] AGY Tistory Specialist": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Merge Posts",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 1] AGY Threads Specialist": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Merge Posts",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 1] Merge Posts": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Tag File as [POSTED]",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 1] Tag File as [POSTED]": {
-      "main": [
-        [
-          {
-            "node": "[Track 1] Discord Notification",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 2] Need YouTube Upload?": {
-      "main": [
-        [
-          {
-            "node": "[Track 2] Download Docx for YouTube SEO",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "[Track 2] Download MP4 Video File",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "[Track 2] Download Docx for YouTube SEO": {
-      "main": [
-        [
-          {
-            "node": "[Track 2] Extract Text for YouTube SEO",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "[Track 2] Extract Text for YouTube SEO": {
       "main": [
         [
           {
+            "node": "[Track 2] Convert Text to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] Convert Text to File": {
+      "main": [
+        [
+          {
             "node": "[Track 2] AGY YouTube SEO Specialist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] Merge Move Results": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] Discord Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] Move MP4 to Finance Completed": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] Merge Move Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] Move Docx to Finance Completed": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] Merge Move Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] YouTube Upload Node": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] Move MP4 to Finance Completed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[Track 2] Move Docx to Finance Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 2] Merge SEO Metadata & Video Stream": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] YouTube Upload Node",
             "type": "main",
             "index": 0
           }
@@ -712,60 +657,180 @@
         ]
       ]
     },
-    "[Track 2] Merge SEO Metadata & Video Stream": {
+    "[Track 2] Download Docx for YouTube SEO": {
       "main": [
         [
           {
-            "node": "[Track 2] YouTube Upload Node",
+            "node": "[Track 2] Extract Text for YouTube SEO",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "[Track 2] YouTube Upload Node": {
+    "[Track 2] Need YouTube Upload?": {
       "main": [
         [
           {
-            "node": "[Track 2] Move Docx to Finance Completed",
+            "node": "[Track 2] Download MP4 Video File",
             "type": "main",
             "index": 0
           },
           {
-            "node": "[Track 2] Move MP4 to Finance Completed",
+            "node": "[Track 2] Download Docx for YouTube SEO",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "[Track 2] Move Docx to Finance Completed": {
+    "[Track 1] Tag File as [POSTED]": {
       "main": [
         [
           {
-            "node": "[Track 2] Merge Move Results",
+            "node": "[Track 1] Discord Notification",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "[Track 2] Move MP4 to Finance Completed": {
+    "[Track 1] Merge Posts": {
       "main": [
         [
           {
-            "node": "[Track 2] Merge Move Results",
+            "node": "[Track 1] Tag File as [POSTED]",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "[Track 2] Merge Move Results": {
+    "[Track 1] AGY Threads Specialist": {
       "main": [
         [
           {
-            "node": "[Track 2] Discord Notification",
+            "node": "[Track 1] Merge Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 1] AGY Tistory Specialist": {
+      "main": [
+        [
+          {
+            "node": "[Track 1] Merge Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 1] Download Raw Docx": {
+      "main": [
+        [
+          {
+            "node": "[Track 1] Extract Text from Docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[Track 1] Need Blog/Threads?": {
+      "main": [
+        [
+          {
+            "node": "[Track 1] Download Raw Docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart File Router": {
+      "main": [
+        [
+          {
+            "node": "[Track 2] Need YouTube Upload?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "[Track 1] Need Blog/Threads?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files in Today Folder": {
+      "main": [
+        [
+          {
+            "node": "Smart File Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Yesterday Folder Exists?": {
+      "main": [
+        [
+          {
+            "node": "Move Yesterday Folder to Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Organize Folder IDs": {
+      "main": [
+        [
+          {
+            "node": "List Files in Today Folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Yesterday Folder Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. List Subfolders Inside Finance Directly": {
+      "main": [
+        [
+          {
+            "node": "4. Organize Folder IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Get Today & Yesterday Dates": {
+      "main": [
+        [
+          {
+            "node": "3. List Subfolders Inside Finance Directly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. 5Min Poll Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Get Today & Yesterday Dates",
             "type": "main",
             "index": 0
           }
@@ -776,9 +841,10 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "versionId": "61f03ab4-a78c-4d2e-b470-4428bf41e47b",
+  "versionId": "c8946963-a8bf-4407-8d37-b2a4ada23acf",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "08dac2cb0a6c72e3ee5de81bf8810ee699d391f09563d067e2ad293dfdbaf723"
