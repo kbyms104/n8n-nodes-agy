@@ -39,7 +39,10 @@ export class Agy implements INodeType {
         name: 'model',
         type: 'options',
         options: [
-          { name: 'Gemini 3.7 Flash (High) - Default', value: 'Gemini 3.7 Flash (High)' },
+          { name: 'Gemini 3.8 Flash (High) - Default', value: 'Gemini 3.8 Flash (High)' },
+          { name: 'Gemini 3.8 Flash (Medium)', value: 'Gemini 3.8 Flash (Medium)' },
+          { name: 'Gemini 3.8 Flash (Low)', value: 'Gemini 3.8 Flash (Low)' },
+          { name: 'Gemini 3.7 Flash (High)', value: 'Gemini 3.7 Flash (High)' },
           { name: 'Gemini 3.7 Flash (Medium)', value: 'Gemini 3.7 Flash (Medium)' },
           { name: 'Gemini 3.7 Flash (Low)', value: 'Gemini 3.7 Flash (Low)' },
           { name: 'Gemini 3.6 Flash (High)', value: 'Gemini 3.6 Flash (High)' },
@@ -55,7 +58,7 @@ export class Agy implements INodeType {
           { name: 'GPT-OSS 120B (Medium)', value: 'GPT-OSS 120B (Medium)' },
           { name: 'Custom Model Name', value: 'custom' },
         ],
-        default: 'Gemini 3.7 Flash (High)',
+        default: 'Gemini 3.8 Flash (High)',
         description: 'AI model to use for the AGY execution (--model)',
       },
       {
