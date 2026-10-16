@@ -66,8 +66,8 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
     }
   },
   "prompt": "Refactor python function",
-  "model": "Gemini 3.8 Flash (High)",
-  "command": "agy --dangerously-skip-permissions --output-format json --model \"Gemini 3.8 Flash (High)\" -p \"Refactor python function\""
+  "model": "Gemini 4 Argon (High)",
+  "command": "agy --dangerously-skip-permissions --output-format json --model \"Gemini 4 Argon (High)\" -p \"Refactor python function\""
 }
 ```
 
@@ -82,7 +82,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 
 ### Example 1: Webhook ➡️ AGY AI ➡️ Slack Notification
 1. **Webhook Trigger**: Receives code review request or user prompt via HTTP POST.
-2. **AGY Node**: Runs prompt with `Gemini 3.8 Flash (High)` in headless unattended mode.
+2. **AGY Node**: Runs prompt with `Gemini 4 Argon (High)` in headless unattended mode.
 3. **Slack Node**: Sends `{{ $json.parsed.response }}` directly to your dev channel.
 
 ### Example 2: Scheduled Daily Code Health Check
@@ -97,7 +97,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 | Parameter | Description | Options / Defaults |
 | --- | --- | --- |
 | **Prompt / Instruction** | Main prompt or task instruction | Supports dynamic n8n expressions (`{{ $json.body.prompt }}`) |
-| **Model** | AI Model selection | `Gemini 3.8 Flash (High)` (Default), `Gemini 3.8 Flash (Medium/Low)`, `Gemini 3.7 Flash`, `Gemini 3.6 Flash`, `Gemini 3.5 Flash`, `Gemini 3.1 Pro`, `Claude Sonnet 4.6 (Thinking)`, `Claude Opus 4.6 (Thinking)`, `GPT-OSS 120B (Medium)`, or `Custom` |
+| **Model** | AI Model selection | `Gemini 4 Argon (High)` (Default), `Gemini 4 Argon (Medium/Low)`, `Gemini 3.8 Flash (High/Medium/Low)`, `Gemini 3.7 Flash`, `Gemini 3.6 Flash`, `Gemini 3.5 Flash`, `Gemini 3.1 Pro`, `Claude Sonnet 5.5`, `Claude Opus 5.5`, `Claude Sonnet 4.6 (Thinking)`, `Claude Opus 4.6 (Thinking)`, `GPT-OSS 120B (Medium)`, or `Custom` |
 | **Output Format** | Output parsing format | `json` (Parsed object), `text` (Raw string), `stream-json` |
 | **Execution Mode** | AGY execution mode | `default`, `plan` (Planning mode), `accept-edits` |
 | **Terminal Sandbox** | Security isolation | `default`, `sandbox`, `no-sandbox` |
