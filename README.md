@@ -97,7 +97,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 | Parameter | Description | Options / Defaults |
 | --- | --- | --- |
 | **Prompt / Instruction** | Main prompt or task instruction | Supports dynamic n8n expressions (`{{ $json.body.prompt }}`) |
-| **Model** | AI Model selection | `Gemini 3.8 Flash (High)` (Default), `Gemini 4 Argon (High/Medium/Low)`, `Gemini 3.8 Flash (Medium/Low)`, `Gemini 3.7 Flash`, `Gemini 3.6 Flash`, `Gemini 3.5 Flash`, `Gemini 3.1 Pro`, `Claude Sonnet 5.5`, `Claude Opus 5.5`, `Claude Sonnet 4.6 (Thinking)`, `Claude Opus 4.6 (Thinking)`, `GPT-OSS 120B (Medium)`, or `Custom` |
+| **Model** | AI Model selection | `Gemini 3.8 Flash (High)` (Default), `Gemini 4 Carbon (High/Medium/Low)`, `Gemini 4 Argon (High/Medium/Low)`, `Gemini 4 Hydrogen (XHigh/High/Medium/Low)`, `Orchestrator (Carbon/Argon)`, `Gemini 3.8 Flash (Medium/Low)`, `Gemini 3.7 Flash`, `Gemini 3.6 Flash`, `Gemini 3.5 Flash`, `Gemini 3.1 Pro`, `Claude Sonnet 5.5`, `Claude Opus 5.5`, `Claude Sonnet 4.6 (Thinking)`, `Claude Opus 4.6 (Thinking)`, `GPT-OSS 120B (Medium)`, or `Custom` |
 | **Output Format** | Output parsing format | `json` (Parsed object), `text` (Raw string), `stream-json` |
 | **Execution Mode** | AGY execution mode | `default`, `plan` (Planning mode), `accept-edits` |
 | **Terminal Sandbox** | Security isolation | `default`, `sandbox`, `no-sandbox` |
