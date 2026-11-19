@@ -39,6 +39,10 @@ export class Agy implements INodeType {
         name: 'model',
         type: 'options',
         options: [
+          { name: 'Gemini 4 Neon (XHigh)', value: 'Gemini 4 Neon (XHigh)' },
+          { name: 'Gemini 4 Neon (High)', value: 'Gemini 4 Neon (High)' },
+          { name: 'Gemini 4 Neon (Medium)', value: 'Gemini 4 Neon (Medium)' },
+          { name: 'Gemini 4 Neon (Low)', value: 'Gemini 4 Neon (Low)' },
           { name: 'Gemini 4 Carbon (High)', value: 'Gemini 4 Carbon (High)' },
           { name: 'Gemini 4 Carbon (Medium)', value: 'Gemini 4 Carbon (Medium)' },
           { name: 'Gemini 4 Carbon (Low)', value: 'Gemini 4 Carbon (Low)' },
@@ -49,6 +53,7 @@ export class Agy implements INodeType {
           { name: 'Gemini 4 Hydrogen (High) - Default', value: 'Gemini 4 Hydrogen (High)' },
           { name: 'Gemini 4 Hydrogen (Medium)', value: 'Gemini 4 Hydrogen (Medium)' },
           { name: 'Gemini 4 Hydrogen (Low)', value: 'Gemini 4 Hydrogen (Low)' },
+          { name: 'Orchestrator (Neon)', value: 'Orchestrator (Neon)' },
           { name: 'Orchestrator (Carbon)', value: 'Orchestrator (Carbon)' },
           { name: 'Orchestrator (Argon)', value: 'Orchestrator (Argon)' },
           { name: 'Gemini 3.8 Flash (High)', value: 'Gemini 3.8 Flash (High)' },
