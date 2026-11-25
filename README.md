@@ -6,10 +6,10 @@ Transform your n8n instance into an autonomous AI agent engine—powering code g
 
 ---
 
-## 🚀 Quick Start in n8n
+## Quick Start in n8n
 
 ### 1. Install Node in n8n
-1. Go to **Settings ➡️ Community Nodes** in your n8n dashboard.
+1. Go to **Settings → Community Nodes** in your n8n dashboard.
 2. Click **Install a community node**.
 3. Enter `n8n-nodes-agy` and click **Install**.
 
@@ -21,7 +21,7 @@ Transform your n8n instance into an autonomous AI agent engine—powering code g
 
 ---
 
-## 🔑 AGY Authentication & `.gemini` Directory Setup
+## AGY Authentication & `.gemini` Directory Setup
 
 To run AGY inside n8n headlessly without interactive login prompts, the n8n Docker container accesses your host's AGY authentication session stored in `~/.gemini`.
 
@@ -43,7 +43,7 @@ sudo chmod -R g+rw ~/.gemini
 
 ---
 
-## 📥 Output Payload Schema (n8n Data Mapping)
+## Output Payload Schema (n8n Data Mapping)
 
 The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP Request, Slack, Email, Postgres, Webhook):
 
@@ -78,9 +78,9 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 
 ---
 
-## ⚡ Workflow Integration Examples
+## Workflow Integration Examples
 
-### Example 1: Webhook ➡️ AGY AI ➡️ Slack Notification
+### Example 1: Webhook → AGY AI → Slack Notification
 1. **Webhook Trigger**: Receives code review request or user prompt via HTTP POST.
 2. **AGY Node**: Runs prompt with `Gemini 4 Hydrogen (High)` in headless unattended mode.
 3. **Slack Node**: Sends `{{ $json.parsed.response }}` directly to your dev channel.
@@ -92,7 +92,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 
 ---
 
-## ⚙️ n8n Node Options & Parameters
+## n8n Node Options & Parameters
 
 | Parameter | Description | Options / Defaults |
 | --- | --- | --- |
@@ -106,7 +106,7 @@ The AGY node returns structured JSON data ready for downstream n8n nodes (HTTP R
 
 ---
 
-## 🐳 Docker Deployment Template for n8n Servers
+## Docker Deployment Template for n8n Servers
 
 If hosting n8n in Docker (Oracle Cloud, AWS, GCP, VPS), use this `docker-compose.yml` to mount the host `agy` binary, `.gemini` settings, and glibc libraries:
 
@@ -143,7 +143,7 @@ volumes:
 
 ---
 
-## ❓ Troubleshooting FAQs
+## Troubleshooting FAQs
 
 - **`open /home/node/.gemini/antigravity-cli/...: permission denied`**: Ensure `group_add: ["1001"]` (or your host GID) is set in your `docker-compose.yml` and run `sudo chmod -R g+rw ~/.gemini` on the host.
 - **`authentication required`**: Perform initial interactive login on host by running `agy` once before starting n8n.
@@ -151,6 +151,6 @@ volumes:
 
 ---
 
-## 📄 License
+## License
 
 MIT License
